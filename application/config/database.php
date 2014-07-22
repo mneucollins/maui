@@ -67,7 +67,20 @@ $db['passport']['swap_pre'] = '';
 $db['passport']['autoinit'] = TRUE;
 $db['passport']['stricton'] = FALSE;
 
-
+$db['maui_import']['username'] = 'theStudio';
+$db['maui_import']['password'] = '28HbMR78ASyEyEYF';
+$db['maui_import']['database'] = 'maui_import';
+$db['maui_import']['dbdriver'] = 'mysql';
+$db['maui_import']['dbprefix'] = '';
+$db['maui_import']['pconnect'] = TRUE;
+$db['maui_import']['db_debug'] = TRUE;
+$db['maui_import']['cache_on'] = FALSE;
+$db['maui_import']['cachedir'] = '';
+$db['maui_import']['char_set'] = 'utf8';
+$db['maui_import']['dbcollat'] = 'utf8_general_ci';
+$db['maui_import']['swap_pre'] = '';
+$db['maui_import']['autoinit'] = TRUE;
+$db['maui_import']['stricton'] = FALSE;
 
 $db['registrar']['hostname'] = 'registrardatabase.iowa.uiowa.edu';
 $db['registrar']['username'] = 'app_passport';

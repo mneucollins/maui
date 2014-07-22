@@ -9,8 +9,9 @@ class Maui_Importer extends CI_Controller {
         parent::__construct();
         //the following does not work from local machine.
         $this->registrardb = $this->load->database('registrar', TRUE);
-        //fred ($this->registrardb, "registrardb");
+        fred ($this->registrardb, "registrardb");
         $this->passportdb = $this->load->database('passport', TRUE);
+        $this->maui = $this->load->database('maui_import', TRUE);
     }
 
     
@@ -29,7 +30,7 @@ class Maui_Importer extends CI_Controller {
 
         //fred ($where, "here1");
         $sql = "TRUNCATE TABLE `_maui_students`";
-        $this->passportdb->query($sql);
+        $this->maui->query($sql);
 
         $sql = "SELECT [SESSION], [univid], [hawkid], [LAST_NAME], [FIRST_NAME], [COLLEGE], [CLASS], [DEPT], [COURSE], [SECTION], [HOURS]
 			FROM [whouse].[dbo].[vw_passport]";
@@ -44,11 +45,11 @@ class Maui_Importer extends CI_Controller {
                 'SESSION' => $student->SESSION, 'univid' => $student->univid, 'hawkid' => $student->hawkid, 'LAST_NAME' => $student->LAST_NAME, 'FIRST_NAME' => $student->FIRST_NAME, 'COLLEGE' => $student->COLLEGE,
 //                'SESSION' => $student->SESSION, 'univid' => $student->univid, 'hawkid' => $student->hawkid, $student->email, 'LAST_NAME' => $student->LAST_NAME, 'FIRST_NAME' => $student->FIRST_NAME, 'COLLEGE' => $student->COLLEGE,
                 'CLASS' => $student->CLASS, 'DEPT' => $student->DEPT, 'COURSE' => $student->COURSE, 'SECTION' => $student->SECTION, 'HOURS' => $student->HOURS);
-            $this->passportdb->insert('_maui_students', $insertArray);
+            $this->maui->insert('_maui_students', $insertArray);
         }
 
         $this->load->library('table');
-        $maui_students = $this->db->get('_maui_students');
+        $maui_students = $this->maui->get('_maui_students');
         $data = $this->table->generate($maui_students);
 
         if (empty($data)) {$data = "no student data received";}
