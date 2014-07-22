@@ -1,0 +1,8 @@
+cron 5 minutes
+php /local/www/vhosts/dsph.uiowa.edu/htdocs/maui/index.php maui_importer run_updates > /dev/null 2>&1
+
+cron every 3 minutes
+php /local/www/vhosts/dsph.uiowa.edu/htdocs/maui/index.php maui_importer registration_email > /dev/null 2>&1
+
+cron daily
+php /local/www/vhosts/dsph.uiowa.edu/htdocs/maui/index.php maui_importer fetch_maui_students > /dev/null 2>&1
