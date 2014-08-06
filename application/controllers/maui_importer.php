@@ -9,7 +9,6 @@ class Maui_Importer extends CI_Controller {
         parent::__construct();
         //the following does not work from local machine.
         $this->registrardb = $this->load->database('registrar', TRUE);
-        fred ($this->registrardb, "registrardb");
         $this->passportdb = $this->load->database('passport', TRUE);
         $this->maui = $this->load->database('maui_import', TRUE);
     }
@@ -17,12 +16,14 @@ class Maui_Importer extends CI_Controller {
     
     public function index() {
         $data['students'] = $this->fetch_maui_students();
-        $data['role_updates'] = $this->update_roles();
-        $data['name_updates'] = $this->update_names();
-        $data['dropped_students'] = $this->handle_drops();
+        $data['update_email'] = $this->update_email();
+
+//        $data['role_updates'] = $this->update_roles();
+//        $data['name_updates'] = $this->update_names();
+//        $data['dropped_students'] = $this->handle_drops();
         if (!$this->input->is_cli_request()){
             echo "uncomment load->view in controller to see list";
- //           $this->load->view('student_list', $data);
+//           $this->load->view('student_list', $data);
         }
     }
         
@@ -54,6 +55,11 @@ class Maui_Importer extends CI_Controller {
 
         if (empty($data)) {$data = "no student data received";}
         return $data;
+    }
+    
+    function update_email() {
+        $sql = "UPDATE _maui_students JOIN _classlist ON _maui_students.hawkid = _classlist.hawkid SET _maui_students.email = _classlist.email";
+        $this->maui->query($sql);
     }
 
     function run_updates() {
@@ -209,6 +215,62 @@ class Maui_Importer extends CI_Controller {
         $data = empty($drops) ? "No students dropped <br />" : "Number of dropped students: ".$this->db->affected_rows()."<br />";
         return $data;
     }
+    
+	function loadClassList() {
+
+		$this->load->model('excel_survey');
+
+		$data['msg'] = "";
+		//$action = $this->input->post('action');
+		if ($this->input->post('return')) {
+			redirect('mainmenu');
+		} elseif ($this->input->post('upload')) {
+			$config['upload_path'] = APPPATH . 'import_data/';
+			$config['allowed_types'] = 'xls';
+			//$config['max_size'] = '32000';
+			$config['max_size'] = '0';
+			$config['file_name'] = 'SurveyDefs.xls';
+			$config['overwrite'] = TRUE;
+			$this->load->library('upload', $config);
+			$this->upload->initialize($config);
+			if (!$this->upload->do_upload()) {
+				$data['errmsg'] = $this->upload->display_errors();
+			} else {
+				//proc the excel file
+				$uploadedfilename = $GLOBALS['_FILES']['userfile']['name'];
+				
+				$filename = $config['upload_path'] . $config['file_name'];
+
+				$msg = $this->excel_survey->loadSurveyDefs($filename);
+
+				$this->load->model('user');
+				$user_name = $this->user->userName($this->session->userdata('user_id'));
+				
+				if (!empty($msg)){
+					$data['errmsg']= "$uploadedfilename: $msg";
+					$data['msg']= '';
+				} else {
+					$data['msg'] .= "$uploadedfilename: excel file processed, survey definitions loaded";
+					$data ['errmsg'] = '';
+				}
+				$msg = (!empty($data['errmsg'])) ? $data['errmsg'] : $data['msg'];
+				$sql = "INSERT INTO `surveydefs_import_log` (`user`, `msg`) VALUES (".$this->db->escape($user_name).", 
+".$this->db->escape($msg).")";
+				$query=$this->db->query($sql);
+			}
+
+		} elseif ( $this->input->post('review')) {
+			redirect('mainmenu/show_surveydefs_import_log');
+
+		} elseif ($this->input->post('logout')) {
+			redirect('mainmenu/logout');
+
+		} 
+		$this->load->view('loadSurveyDefs_view', $data);
+	}
+
+    
+    
 }
 
 ?>
