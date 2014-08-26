@@ -20,7 +20,7 @@ class Maui_Importer extends CI_Controller {
 
 //        $data['role_updates'] = $this->update_roles();
 //        $data['name_updates'] = $this->update_names();
-//        $data['dropped_students'] = $this->handle_drops();
+        $data['dropped_students'] = $this->handle_drops();
         if (!$this->input->is_cli_request()){
             echo "uncomment load->view in controller to see list";
 //           $this->load->view('student_list', $data);
@@ -195,14 +195,17 @@ class Maui_Importer extends CI_Controller {
     function handle_drops() {      
         //don't actually delete person just update the role
         
-        $sql = "INSERT INTO _maui_students_dropped (uid) 
-                    SELECT users_roles.uid FROM users_roles
-                    JOIN users ON users_roles.uid = users.uid
-                    JOIN cas_user ON cas_user.uid = users.uid
-                    LEFT JOIN _maui_students ON cas_user.cas_name = _maui_students.hawkid
-                    LEFT JOIN _maui_ignore ON _maui_ignore.uid = users.uid
-                    WHERE _maui_ignore.uid is null AND _maui_students.hawkid is null AND users_roles.uid = 5";
-        
+        //$sql = "UPDATE passport2014.user_roles
+        //			JOIN _maui_students"
+
+		$sql = "UPDATE passport2014.users_roles
+					JOIN passport2014.users on passport2014.users_roles.uid = passport2014.users.uid
+					LEFT JOIN maui_import._maui_students ON users.name = _maui_students.hawkid
+					LEFT JOIN maui_import._maui_ignore ON users.name = maui_import._maui_ignore.login_name
+				SET users_roles.rid = 1
+					WHERE maui_import._maui_students.hawkid IS NULL 
+						AND maui_import._maui_ignore.login_name IS NULL
+						AND passport2014.users_roles.rid =6";
         $sql = "UPDATE users_roles
                     JOIN users ON users_roles.uid = users.uid
                     JOIN cas_user ON cas_user.uid = users.uid
@@ -210,14 +213,15 @@ class Maui_Importer extends CI_Controller {
                     LEFT JOIN _maui_ignore ON _maui_ignore.uid = users.uid
                     SET users_roles.rid = 1
                     WHERE _maui_ignore.uid is null AND _maui_students.hawkid is null" ;
-
         $drops = $this->db->affected_rows();
         $data = empty($drops) ? "No students dropped <br />" : "Number of dropped students: ".$this->db->affected_rows()."<br />";
         return $data;
     }
+ 
     
 	function loadClassList() {
-
+	    //currently non-functional
+	    //this is copied from PSP and needs to be updated for Maui_Importer
 		$this->load->model('excel_survey');
 
 		$data['msg'] = "";
@@ -229,7 +233,7 @@ class Maui_Importer extends CI_Controller {
 			$config['allowed_types'] = 'xls';
 			//$config['max_size'] = '32000';
 			$config['max_size'] = '0';
-			$config['file_name'] = 'SurveyDefs.xls';
+			$config['file_name'] = 'ClassList.xls';
 			$config['overwrite'] = TRUE;
 			$this->load->library('upload', $config);
 			$this->upload->initialize($config);
@@ -266,7 +270,7 @@ class Maui_Importer extends CI_Controller {
 			redirect('mainmenu/logout');
 
 		} 
-		$this->load->view('loadSurveyDefs_view', $data);
+		$this->load->view('loadClassList_view', $data);
 	}
 
     
